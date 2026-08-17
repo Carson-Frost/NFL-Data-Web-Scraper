@@ -1,45 +1,44 @@
 # NFL Data Pipeline
 
-Fetch NFL player statistics and roster data using **nflfastR**: https://www.nflfastr.com/
+Four R scripts that pull NFL data from [nflfastR](https://www.nflfastr.com/) and write it to CSV,
+one file per season. Between them they cover player season stats, player weekly stats, rosters, and
+schedules, back to 1999.
 
 ## Requirements
 
-- **R 4.0+** installed
-
-## Quick Start
-
-### 1. Install R Dependencies
-
-Open **R**:
+R 4.0 or newer, with two packages installed:
 
 ```r
 install.packages(c("nflfastR", "dplyr"))
 ```
 
-### 2. Fetch Data
+## Running a script
 
-Run R scripts*:
+Each script runs on its own and takes the 2025 regular season by default.
 
 ```bash
-# Season data (default: 2025, REG season)
-Rscript fetch_season_data.R
-
-# Weekly data (default: 2025, REG season)
-Rscript fetch_weekly_data.R
-
-# Roster data (default: 2025)
-Rscript fetch_roster_data.R
-
-# Schedule data (default: 2025)
-Rscript fetch_schedule_data.R
+Rscript fetch_season_data.R      # player season statistics
+Rscript fetch_weekly_data.R      # player weekly statistics
+Rscript fetch_roster_data.R      # rosters
+Rscript fetch_schedule_data.R    # schedules
 ```
 
-**Parameters:**
-- `--seasons=2025` — Single year
-- `--seasons=2022:2025` — Year range  
-- `--season-type=REG+POST` — Include playoffs (default: REG)
+A script creates its output folder if it is missing, writes one CSV per season into it, and then
+prints the files it wrote with their sizes.
 
-**Examples:**
+| Script | What it fetches | Where it writes |
+|---|---|---|
+| `fetch_season_data.R` | Player season statistics, from `calculate_stats`. | `output/season_stats/` |
+| `fetch_weekly_data.R` | Player weekly statistics, one row per player per week. | `output/weekly_stats/` |
+| `fetch_roster_data.R` | Rosters, from `fast_scraper_roster`. | `output/roster_data/` |
+| `fetch_schedule_data.R` | Season schedules, from `fast_scraper_schedules`. | `output/schedule_data/` |
+
+## Choosing seasons
+
+`--seasons` takes a single year or an inclusive range. `--season-type` takes `REG`, `POST`, or
+`REG+POST`, and applies to the season and weekly scripts; rosters and schedules are not split by
+season type and ignore it.
+
 ```bash
 Rscript fetch_season_data.R --seasons=2022:2025 --season-type=REG+POST
 Rscript fetch_weekly_data.R --seasons=1999
@@ -47,34 +46,5 @@ Rscript fetch_roster_data.R --seasons=2020:2025
 Rscript fetch_schedule_data.R --seasons=2010
 ```
 
-
-## Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `fetch_season_data.R` | Fetch player season statistics |
-| `fetch_weekly_data.R` | Fetch player weekly statistics |
-| `fetch_roster_data.R` | Fetch player roster information |
-| `fetch_schedules.R` | Fetch season schedule information |
-
-
-## Data Output
-
-CSV files are saved to `output/`:
-- `output/season_stats/` — Season statistics
-- `output/weekly_stats/` — Weekly statistics
-- `output/roster_data/` — Roster information
-- `output/schedule_data/` — Schedule information
-
-
-## File Naming
-
-Files are named: `[type]_data_[YEAR]_[SEASON_TYPE].csv`
-
-Examples:
-- `season_data_2025_REG.csv`
-- `weekly_data_2025_REG+POST.csv`
-- `roster_data_2025.csv`
-- `schedule_data_2025.csv`
-
-Each year gets its own file. Range requests (e.g., `--seasons=2022:2025`) create separate files for each year.
+The environment variables `SEASONS` and `SEASON_TYPE` set the same two values, and they take
+precedence over the command line flags when both are given.
